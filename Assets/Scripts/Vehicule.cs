@@ -8,55 +8,57 @@ public abstract class Vehicule : MonoBehaviour
     public float fireRate;
     public float dodgeMultiplier;
 
-    private float horizontalInput;
-
     protected Rigidbody m_Rigidbody;
-    public float moveForce;
+    public float multiplier;
 
-    public List<Transform> anchors;
-    public float distanceToGround;
-    public LayerMask canFloatOn;
+    public Transform[] anchors;
+    public Transform[] groundAnchors;
+    RaycastHit[] hits = new RaycastHit[4];
+
+    private float horizontalInput;
 
     protected void Awake()
     {
         m_Rigidbody = GetComponent<Rigidbody>();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
     // Update is called once per frame
     private void Update()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
+        
     }
     void FixedUpdate()
     {
         Move();
     }
 
-    RaycastHit[] hits = new RaycastHit[4];
     public virtual void Move()
     {
-        m_Rigidbody.AddForce(Vector3.right * moveForce * horizontalInput);
+        //Get Input from player
+        horizontalInput = Input.GetAxis("Horizontal");
 
-        for (int i = 0; i < anchors.Count; i++)
+        for (int i = 0; i < anchors.Length; i++)
         {
-            // Each anchor sens a raycast down
-            if (Physics.Raycast(anchors[i].position, Vector3.down, out hits[i], distanceToGround, canFloatOn))
-            {
-                //Draw Line if the ground is hit
-                Debug.DrawRay(anchors[i].position, hits[i].transform.position, Color.red, .1f);
-
-                Debug.Log(anchors[i].name + "; " + hits[i].transform.position);
-
-                m_Rigidbody.AddForceAtPosition(Vector3.up * moveForce * distanceToGround, anchors[i].position, ForceMode.Force);
-            }
+            ApplyForce(anchors[i], groundAnchors[i], hits[i]);
         }
 
+        Vector3 direction = new Vector3(horizontalInput * speed, 0f, 0f);
+        m_Rigidbody.AddForce(direction, ForceMode.Acceleration);
+    }
+
+    private void ApplyForce(Transform anchor, Transform groundedAnchor, RaycastHit hit)
+    {
+        if (Physics.Raycast(anchor.position, -anchor.up, out hit))
+        {
+            float force = 0;
+            force = Mathf.Abs(1 / (hit.point.y - anchor.position.y));
+
+            Debug.DrawLine(anchor.position, groundedAnchor.position, Color.red);
+
+            groundedAnchor.position = new Vector3(anchor.position.x, hit.point.y, anchor.position.z);
+
+            m_Rigidbody.AddForceAtPosition(transform.up * force * multiplier,  anchor.position, ForceMode.Acceleration);
+        }
     }
 
     public virtual void Dodge()
