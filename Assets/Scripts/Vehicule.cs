@@ -33,12 +33,18 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
     [Header("Animation Parameters")]
     protected string dodgeAnimParameter = "Dodge";
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip dodgeEffect;
+    private AudioSource m_Audiosource;
+    public AudioSource audioSource { get { return m_Audiosource; } set { m_Audiosource = value; } }
+
     private float horizontalInput;
 
     protected void Awake()
     {
         m_Rigidbody = GetComponent<Rigidbody>();
         m_Animator = GetComponent<Animator>();
+        m_Audiosource = GetComponent<AudioSource>();
 
         foreach (Transform anchor in anchors)
         {
@@ -46,13 +52,15 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
         }
     }
 
-    void FixedUpdate()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space) && readyToDodge)
-        {
             Dodge();
-        }
+        
+    }
 
+    void FixedUpdate()
+    {
         Move();
     }
 
@@ -97,6 +105,7 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
         m_Rigidbody.AddForce(forceToadd, ForceMode.Impulse);
 
         m_ReadyToDodge = false;
+        m_Audiosource.PlayOneShot(dodgeEffect, 1.0f);
 
         //Dogde will be available in 'dodgeCoolDown" time
         Invoke(nameof(ResetDodgeCoolDown), dodgeCoolDown);

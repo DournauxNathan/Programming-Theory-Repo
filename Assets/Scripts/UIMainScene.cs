@@ -15,7 +15,9 @@ public class UIMainScene : MonoBehaviour
         void GetContent();
     }
 
+    [Header("Player HUD Informations")]
     public GameObject crossHair;
+    public TextMeshProUGUI distanceTravel;
 
     [Header("Enemy Informations")]
     public GameObject currentEnemy;
@@ -60,6 +62,11 @@ public class UIMainScene : MonoBehaviour
             Destroy(currentEnemy);
             currentEnemy = null;
         }
+    }
+
+    public void DisplayMetersTravel(int distance)
+    {
+        distanceTravel.SetText(string.Format("{0} {1}", "Distance: ", distance));
     }
 
     public static Vector3 GetMousePosition()

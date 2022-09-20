@@ -12,7 +12,6 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
     [SerializeField] private Transform turretPivotPoint;
 
     [Header("Settings")]
-
     [SerializeField] private float m_Force;
     public float force { get { return m_Force; } set { m_Force = value; } }
 
@@ -26,6 +25,16 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
     public bool readyToShoot { get { return m_ReadyToShoot; } set { m_ReadyToShoot = value; } }
 
     [SerializeField] private GameObject m_ProjectilePrefab;
+
+    [Header("SFX")]
+    [SerializeField] private AudioClip shot;
+    private AudioSource m_Audiosource;
+    public AudioSource audioSource { get { return m_Audiosource; } set { m_Audiosource = value; } }
+
+    private void Awake()
+    {
+        m_Audiosource = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
@@ -55,7 +64,7 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
             Vector3 difference = (hit.transform.position - turret.position).normalized;
             float distance = difference.magnitude;
             Vector3 direction = (difference / distance).normalized;
-            
+
             FireBullet(direction, force * multiplier);
         }
 
@@ -69,11 +78,15 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
 
     public virtual void FireBullet(Vector3 direction, float force)
     {
-        GameObject bullet = Instantiate(m_ProjectilePrefab, turret.transform.position, Quaternion.identity);
+        m_Audiosource.PlayOneShot(shot, 1.0f);
 
-        Rigidbody b = bullet.GetComponent<Rigidbody>();
+        GameObject projectile = Instantiate(m_ProjectilePrefab, turret.transform.position, Quaternion.identity);
 
-        b.AddRelativeForce(direction * force);
+        projectile.transform.rotation = Quaternion.LookRotation(direction);
+
+        Rigidbody projectilRb = projectile.GetComponent<Rigidbody>();
+
+        projectilRb.AddRelativeForce(direction * force);
     }
 
     public virtual string GetName()
