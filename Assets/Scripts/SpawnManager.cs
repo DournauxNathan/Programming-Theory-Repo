@@ -19,17 +19,19 @@ public class SpawnManager : MonoBehaviour
     {
         InvokeRepeating(nameof(SpawnObstacle), startDelay, repeatRate);
     }
-
+    private bool doOnce = true;
     private void Update()
     {
+
         if (GameManager.Instance.DistanceTraveled() >= 50 && spawnEnemy)
         {
             spawnEnemy = true;
+            CancelInvoke();
 
             if (spawnEnemy)
             {
                 spawnEnemy = false;
-                Invoke(nameof(SpawnEnemy), 0.0f);
+                Invoke(nameof(SpawnEnemy), startDelay);
             }
         }
     }
@@ -41,7 +43,7 @@ public class SpawnManager : MonoBehaviour
 
     void SpawnEnemy()
     {
-        Debug.Log("1");
+        UIMainScene.Instance.SetActiveUIContent(UIMainScene.Instance.upperCenter, true);
         Instantiate(enemyPrefabs[GetRandomInt(enemyPrefabs)], this.transform.position, Quaternion.identity);
     }
 

@@ -25,6 +25,7 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
 
     public virtual void Subscribe(GameObject currentEnemy, string name, float maxHealth)
     {
+        health = maxHealth;
         UIMainScene.Instance.DisplayEnemyInfo(currentEnemy, name, maxHealth);
     }
 
@@ -32,11 +33,6 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
     {
         UIMainScene.Instance.currentEnemy = this.gameObject;
         UIMainScene.Instance.UpdateEnemyHealth(damage);
-
-        if (health <= 0)
-        {
-            GameManager.Instance.isEnemyClose = false;
-        }
     }
 
     public float GetDistanceToPlayer()

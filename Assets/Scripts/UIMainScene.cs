@@ -15,6 +15,9 @@ public class UIMainScene : MonoBehaviour
         void GetContent();
     }
 
+    [Header("")]
+    public GameObject upperCenter;
+    
     [Header("Player HUD Informations")]
     public GameObject crossHair;
     public TextMeshProUGUI distanceTravel;
@@ -41,6 +44,11 @@ public class UIMainScene : MonoBehaviour
         crossHair.transform.position = GetMousePosition();
     }
 
+    public void SetActiveUIContent(GameObject uiContent, bool state)
+    {
+        uiContent.SetActive(state);
+    }
+
     public void DisplayEnemyInfo(GameObject enemy, string name, float healthValue)
     {
         //Set enemy
@@ -59,6 +67,9 @@ public class UIMainScene : MonoBehaviour
 
         if (enemyHealthBar.value <= 0)
         {
+            GameManager.Instance.isEnemyClose = false;
+            SetActiveUIContent(UIMainScene.Instance.upperCenter, false);
+
             Destroy(currentEnemy);
             currentEnemy = null;
         }

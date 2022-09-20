@@ -15,9 +15,6 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
     [SerializeField] private float m_Force;
     public float force { get { return m_Force; } set { m_Force = value; } }
 
-    [SerializeField] private float m_Range;
-    public float range { get { return m_Range; } set { m_Range = value; } }
-
     [SerializeField] private float m_FireRate;
     public float fireRate { get { return m_FireRate; } set { m_FireRate = value; } }
 
@@ -59,7 +56,7 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(UIMainScene.GetMousePosition());
 
-        if (Physics.Raycast(ray, out hit, range))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
             Vector3 difference = (hit.transform.position - turret.position).normalized;
             float distance = difference.magnitude;
