@@ -11,16 +11,40 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
     [SerializeField] private float m_MaxHealth;
     public float maxHealth { get { return m_MaxHealth; } set { m_MaxHealth = value; } }
 
-    public virtual void Subscribe(string name, float maxHealth)
+    private void FixedUpdate()
     {
-        UIMainScene.Instance.DisplayEnemyInfo(this.gameObject ,name, maxHealth);
+        if (GetDistanceToPlayer() > 150f && !GameManager.Instance.isEnemyClose)
+        {
+            transform.Translate(-Vector3.forward * .5f);
+        }
+        else
+        {
+            GameManager.Instance.isEnemyClose = true;
+        }
+    }
+
+    public virtual void Subscribe(GameObject currentEnemy, string name, float maxHealth)
+    {
+        UIMainScene.Instance.DisplayEnemyInfo(currentEnemy, name, maxHealth);
     }
 
     public virtual void SubscribeDamage(float damage)
     {
         UIMainScene.Instance.currentEnemy = this.gameObject;
         UIMainScene.Instance.UpdateEnemyHealth(damage);
+
+        if (health <= 0)
+        {
+            GameManager.Instance.isEnemyClose = false;
+        }
     }
+
+    public float GetDistanceToPlayer()
+    {
+        float distance = Mathf.Abs(GameObject.Find("Player").transform.position.z - this.transform.position.z);
+        return distance;
+    }
+
 
     public virtual string GetName()
     {

@@ -4,20 +4,14 @@ using UnityEngine;
 
 public class Cube : Enemy
 {
-    // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
-        base.Subscribe(GetName(), maxHealth);
+        base.Subscribe(this.gameObject, GetName(), maxHealth);
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void Subscribe(GameObject go,string name, float maxHealth)
     {
-    }
-
-    public override void Subscribe(string name, float maxHealth)
-    {
-        base.Subscribe(name, maxHealth);
+        base.Subscribe(go, name, maxHealth);
     }
 
 

@@ -12,10 +12,26 @@ public class SpawnManager : MonoBehaviour
 
     public List<Transform> slots;
 
+    public bool spawnEnemy;
+
     // Start is called before the first frame update
     void Start()
     {
         InvokeRepeating(nameof(SpawnObstacle), startDelay, repeatRate);
+    }
+
+    private void Update()
+    {
+        if (GameManager.Instance.DistanceTraveled() >= 50 && spawnEnemy)
+        {
+            spawnEnemy = true;
+
+            if (spawnEnemy)
+            {
+                spawnEnemy = false;
+                Invoke(nameof(SpawnEnemy), 0.0f);
+            }
+        }
     }
 
     void SpawnObstacle()
@@ -25,7 +41,8 @@ public class SpawnManager : MonoBehaviour
 
     void SpawnEnemy()
     {
-        Instantiate(enemyPrefabs[GetRandomInt(obstaclePrefabs)], slots[GetRandomInt(slots)].position, Quaternion.identity);
+        Debug.Log("1");
+        Instantiate(enemyPrefabs[GetRandomInt(enemyPrefabs)], this.transform.position, Quaternion.identity);
     }
 
     // ABSTRACTION
