@@ -6,6 +6,10 @@ public class Bullet : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("Enemy"))
+        {
+            other.GetComponent<Enemy>().SubscribeDamage(10f);
+        }
         Destroy(this.gameObject);
     }
 }

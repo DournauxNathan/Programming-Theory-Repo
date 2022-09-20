@@ -4,7 +4,7 @@ using UnityEngine;
 
 //INHERITANCE - Parent class
 //Base class for all vehicule. It will handle movement and physics of vehicule
-public abstract class Vehicule : MonoBehaviour
+public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 {
     // ENCAPSULATION
     private Rigidbody m_Rigidbody;
@@ -18,8 +18,11 @@ public abstract class Vehicule : MonoBehaviour
     public float multiplier;
 
     [SerializeField] private List<Transform> anchors;
-    private List<Transform> groundAnchors;
+    [HideInInspector] public List<Transform> groundAnchors;
     RaycastHit[] hits = new RaycastHit[4];
+
+    private int xRange = 35;
+
 
     private bool m_ReadyToDodge = true;
     public bool readyToDodge { get { return m_ReadyToDodge; } set { m_ReadyToDodge = value; } }
@@ -39,7 +42,7 @@ public abstract class Vehicule : MonoBehaviour
 
         foreach (Transform anchor in anchors)
         {
-            groundAnchors.Add(anchor.GetChild(0));
+            groundAnchors.Add(anchor.GetChild(0).transform);
         }
     }
 
@@ -66,6 +69,8 @@ public abstract class Vehicule : MonoBehaviour
 
         Vector3 direction = new Vector3(horizontalInput * speed, 0f, 0f);
         m_Rigidbody.AddForce(direction, ForceMode.Acceleration);
+
+        KeepVehiculeInBound(xRange);
     }
 
     private void ApplyForce(Transform anchor, Transform groundedAnchor, RaycastHit hit)
@@ -102,8 +107,33 @@ public abstract class Vehicule : MonoBehaviour
         m_ReadyToDodge = true;
     }
 
+    private void KeepVehiculeInBound(float rangeOfBound)
+    {
+        if (transform.position.x < -rangeOfBound)
+        {
+            transform.position = new Vector3(-xRange, transform.position.y, transform.position.z);
+        }
+        if (transform.position.x > rangeOfBound)
+        {
+            transform.position = new Vector3(xRange, transform.position.y, transform.position.z);
+        }
+    }
+
     public virtual void CalculSpeed()
     {
         speed = Mathf.RoundToInt(m_Rigidbody.velocity.magnitude * 2.237f);
+    }
+        public virtual string GetName()
+    {
+        return "Vehicule";
+    }
+
+    public virtual string GetData()
+    {
+        return "";
+    }
+
+    public virtual void GetContent()
+    {
     }
 }

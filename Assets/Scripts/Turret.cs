@@ -4,7 +4,7 @@ using UnityEngine;
 
 //INHERITANCE - Parent class
 //Base class for all turrets. It will handle aiming and shooting methods
-public abstract class Turret : MonoBehaviour
+public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
 {
     // ENCAPSULATION
     [Header("References")]
@@ -12,6 +12,10 @@ public abstract class Turret : MonoBehaviour
     [SerializeField] private Transform turretPivotPoint;
 
     [Header("Settings")]
+
+    [SerializeField] private float m_Force;
+    public float force { get { return m_Force; } set { m_Force = value; } }
+
     [SerializeField] private float m_Range;
     public float range { get { return m_Range; } set { m_Range = value; } }
 
@@ -29,27 +33,22 @@ public abstract class Turret : MonoBehaviour
         {
             turretPivotPoint.LookAt(AimToMousePosition());
         }
-
-        if (Input.GetKeyDown(KeyCode.Mouse0) && readyToShoot)
-        {
-            Shoot();
-        }
     }
 
     // ABSTRACTION
     public virtual Vector3 AimToMousePosition()
     {
-        Vector3 aim = Camera.main.ScreenToWorldPoint(UiManager.GetMousePosition());
+        Vector3 aim = Camera.main.ScreenToWorldPoint(UIMainScene.GetMousePosition());
 
         return aim;
     }
 
-    public virtual void Shoot()
+    public virtual void Shoot(float multiplier)
     {
         readyToShoot = false;
 
         RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(UiManager.GetMousePosition());
+        Ray ray = Camera.main.ScreenPointToRay(UIMainScene.GetMousePosition());
 
         if (Physics.Raycast(ray, out hit, range))
         {
@@ -57,7 +56,7 @@ public abstract class Turret : MonoBehaviour
             float distance = difference.magnitude;
             Vector3 direction = (difference / distance).normalized;
             
-            FireBullet(direction);
+            FireBullet(direction, force * multiplier);
         }
 
         Invoke(nameof(ResetShoot), fireRate);
@@ -68,12 +67,26 @@ public abstract class Turret : MonoBehaviour
         readyToShoot = true;
     }
 
-    public virtual void FireBullet(Vector3 direction)
+    public virtual void FireBullet(Vector3 direction, float force)
     {
         GameObject bullet = Instantiate(m_ProjectilePrefab, turret.transform.position, Quaternion.identity);
 
         Rigidbody b = bullet.GetComponent<Rigidbody>();
 
-        b.AddRelativeForce(direction * 1000f);
+        b.AddRelativeForce(direction * force);
+    }
+
+    public virtual string GetName()
+    {
+        return "Turret";
+    }
+
+    public virtual string GetData()
+    {
+        return "";
+    }
+
+    public virtual void GetContent()
+    {
     }
 }
