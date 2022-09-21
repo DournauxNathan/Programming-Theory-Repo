@@ -9,6 +9,11 @@ public class Cube : Enemy
         base.Subscribe(this.gameObject, GetName(), maxHealth);
     }
 
+    private void FixedUpdate()
+    {
+        GoTo(-Vector3.forward, 1f);
+    }
+
     public override void Subscribe(GameObject go,string name, float maxHealth)
     {
         base.Subscribe(go, name, maxHealth);

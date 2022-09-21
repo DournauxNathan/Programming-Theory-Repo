@@ -2,20 +2,37 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class Boundary
+{
+    public float xMin, xMax, zMin, zMax;
+}
+
 //INHERITANCE - Parent class
 //Base class for all vehicule. It will handle movement and physics of vehicule
 public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 {
     // ENCAPSULATION
-    private Rigidbody m_Rigidbody;
-    public Rigidbody rigibody { get { return m_Rigidbody; } set { m_Rigidbody = value; } }
+    [Header("Settings")]
+    [SerializeField] private float m_MaxHealth;
+    public float maxHealth { get { return m_MaxHealth; } set { m_MaxHealth = value; } }
 
     public float speed;
+    public float dodgeSpeed;
     public float dodgeForce;
     public float dodgeMultiplier;
     public float dodgeCoolDown;
 
     public float multiplier;
+
+    private float m_Health;
+    public float health { get { return m_Health; } set { m_Health = value; } }
+
+    private float m_DodgeCharge;
+    public float dodgeCharge { get { return m_DodgeCharge; } set { m_DodgeCharge = value; } }
+
+    private bool m_ReadyToDodge = true;
+    public bool readyToDodge { get { return m_ReadyToDodge; } set { m_ReadyToDodge = value; } }
 
     [SerializeField] private List<Transform> anchors;
     [HideInInspector] public List<Transform> groundAnchors;
@@ -23,21 +40,20 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 
     private int xRange = 35;
 
-
-    private bool m_ReadyToDodge = true;
-    public bool readyToDodge { get { return m_ReadyToDodge; } set { m_ReadyToDodge = value; } }
-
     private Animator m_Animator;
     public Animator animator { get { return m_Animator; } set { m_Animator = value; } }
 
     [Header("Animation Parameters")]
-    protected string dodgeAnimParameter = "Dodge";
+    protected string dodgeLAnimParameter = "Dodge_L";
+    protected string dodgeRAnimParameter = "Dodge_R";
 
     [Header("SFX")]
     [SerializeField] private AudioClip dodgeEffect;
     private AudioSource m_Audiosource;
     public AudioSource audioSource { get { return m_Audiosource; } set { m_Audiosource = value; } }
 
+
+    private Rigidbody m_Rigidbody;
     private float horizontalInput;
 
     protected void Awake()
@@ -52,17 +68,24 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
         }
     }
 
+    private void Start()
+    {
+        UIMainScene.Instance.SetSliderTo(UIMainScene.Instance.playerHealthBar, maxHealth);
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space) && readyToDodge)
-            Dodge();
-        
+            Dodge();        
     }
 
     void FixedUpdate()
     {
         Move();
     }
+
+    public float tilt;
+    public Boundary boundary;
 
     // ABSTRACTION
     public virtual void Move()
@@ -98,6 +121,23 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 
     public virtual void Dodge()
     {
+        if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0)
+        {
+            //Set a rate at which we should turn
+            float turnSpeed = dodgeSpeed * Time.deltaTime;
+            //Connect turning rate to horizonal motion for smooth transition
+            float rotate = Input.GetAxis("Horizontal") * turnSpeed;
+            //            //Get current rotation
+            //            float currentRotation = gameObject.transform.rotation.z;
+            //            //Add current rotation to rotation rate to get new rotation
+            //            Quaternion rotation = Quaternion.Euler (0, 0, currentRotation + rotate);
+            //            //Move object to new rotation
+            //            gameObject.transform.rotation = rotation;
+            //gameObject.transform.Rotate();
+
+            m_Rigidbody.MoveRotation(Quaternion.Euler(Vector3.forward * rotate));
+            m_Rigidbody.MoveRotation(Quaternion.Euler(Vector3.zero));
+        }
         //Force in the direction of the horizontal input
         Vector3 forceToadd = Vector3.right * dodgeForce * dodgeMultiplier * horizontalInput;
 
@@ -106,16 +146,34 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 
         m_ReadyToDodge = false;
         m_Audiosource.PlayOneShot(dodgeEffect, 1.0f);
+        
+        dodgeCharge = 0f;
+        UIMainScene.Instance.dodgeCharge.fillAmount = dodgeCharge;
+
+        StartCoroutine(nameof(IncreaseDodgeCharge));
 
         //Dogde will be available in 'dodgeCoolDown" time
         Invoke(nameof(ResetDodgeCoolDown), dodgeCoolDown);
     }
 
-    private void ResetDodgeCoolDown()
+    IEnumerator IncreaseDodgeCharge()
     {
-        m_ReadyToDodge = true;
+        while (true)
+        {
+            yield return new WaitForSeconds(0);
+            UIMainScene.Instance.dodgeCharge.fillAmount += Time.deltaTime / dodgeCoolDown;
+        }
     }
 
+    private void ResetDodgeCoolDown()
+    {
+        
+        StopCoroutine(nameof(IncreaseDodgeCharge));
+        m_ReadyToDodge = true;
+        dodgeCharge = 1;
+        UIMainScene.Instance.dodgeCharge.fillAmount = dodgeCharge;
+    }
+    
     private void KeepVehiculeInBound(float rangeOfBound)
     {
         if (transform.position.x < -rangeOfBound)
@@ -128,11 +186,17 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
         }
     }
 
+    public virtual void SubscribeDamage(float damage)
+    {
+        UIMainScene.Instance.UpdateSlider(UIMainScene.Instance.playerHealthBar, damage);
+    }
+
     public virtual void CalculSpeed()
     {
         speed = Mathf.RoundToInt(m_Rigidbody.velocity.magnitude * 2.237f);
     }
-        public virtual string GetName()
+    
+    public virtual string GetName()
     {
         return "Vehicule";
     }

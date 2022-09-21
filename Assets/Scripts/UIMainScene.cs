@@ -20,6 +20,8 @@ public class UIMainScene : MonoBehaviour
     
     [Header("Player HUD Informations")]
     public GameObject crossHair;
+    public Image dodgeCharge;
+    public Slider playerHealthBar;
     public TextMeshProUGUI distanceTravel;
 
     [Header("Enemy Informations")]
@@ -56,14 +58,12 @@ public class UIMainScene : MonoBehaviour
         //Set hisname
         enemyName.SetText(name);
         //Set the slider max value to the his max health
-        enemyHealthBar.maxValue = healthValue;
-        enemyHealthBar.value = enemyHealthBar.maxValue;
+        SetSliderTo(enemyHealthBar, healthValue);
     }
 
     public void UpdateEnemyHealth(float damage)
     {
-        //Set the slider max value to the enemy max health
-        enemyHealthBar.value -= damage;
+        UpdateSlider(enemyHealthBar, damage);
 
         if (enemyHealthBar.value <= 0)
         {
@@ -72,7 +72,21 @@ public class UIMainScene : MonoBehaviour
 
             Destroy(currentEnemy);
             currentEnemy = null;
+
+            SpawnManager.Instance.InvokeRepeating("SpawnObstacle", SpawnManager.Instance.startDelay, SpawnManager.Instance.repeatRate);
         }
+    }
+
+    public void SetSliderTo(Slider slider, float value)
+    {
+        slider.maxValue = value;
+
+        slider.value = slider.maxValue;
+    }
+
+    public void UpdateSlider(Slider slider, float value)
+    {
+        slider.value -= value;
     }
 
     public void DisplayMetersTravel(int distance)

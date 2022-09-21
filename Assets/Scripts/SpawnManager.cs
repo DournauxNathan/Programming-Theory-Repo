@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class SpawnManager : MonoBehaviour
 {
+    public static SpawnManager Instance { get; private set; }
+
     public float startDelay;
     public float repeatRate;
     
@@ -13,17 +16,17 @@ public class SpawnManager : MonoBehaviour
     public List<Transform> slots;
 
     public bool spawnEnemy;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
+        Instance = this;
         InvokeRepeating(nameof(SpawnObstacle), startDelay, repeatRate);
+
     }
-    private bool doOnce = true;
+
     private void Update()
     {
 
-        if (GameManager.Instance.DistanceTraveled() >= 50 && spawnEnemy)
+        if (GameManager.Instance.DistanceTraveled() >= 150 && spawnEnemy)
         {
             spawnEnemy = true;
             CancelInvoke();
@@ -34,6 +37,12 @@ public class SpawnManager : MonoBehaviour
                 Invoke(nameof(SpawnEnemy), startDelay);
             }
         }
+
+    }
+
+    public void RepeatInvoke(string method, float delay, float repeatRate)
+    {
+        InvokeRepeating(nameof(method), delay, repeatRate);
     }
 
     void SpawnObstacle()
@@ -51,5 +60,13 @@ public class SpawnManager : MonoBehaviour
     public int GetRandomInt<T>(List<T> list)
     {
         return Random.Range(0,list.Count);
+    }
+
+}
+
+public static class MonoExtension
+{    public static void Invoke(this MonoBehaviour mono, string method, float delay, float repeatRate)
+    {
+        mono.InvokeRepeating(nameof(method), delay, repeatRate);
     }
 }

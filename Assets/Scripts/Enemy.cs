@@ -5,21 +5,67 @@ using UnityEngine;
 // INHERITANCE
 public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
 {
-    private float m_Health;
-    public float health { get { return m_Health;  } set { m_Health = value; } }
-
+    // ENCAPSULATION
+    [Header("Enemy's Settings")]
     [SerializeField] private float m_MaxHealth;
     public float maxHealth { get { return m_MaxHealth; } set { m_MaxHealth = value; } }
 
-    private void FixedUpdate()
+    private float m_Health;
+    public float health { get { return m_Health; } set { m_Health = value; } }
+
+    [SerializeField] private int m_AppearDistance;
+    public int appearDistance { get { return m_AppearDistance; } set { m_AppearDistance = value; } }
+
+
+    [Header("Attack Parameters")]
+    [SerializeField] private List<Transform> m_FirePoints;
+    public List<Transform> firePoints { get { return m_FirePoints; } set { m_FirePoints = value; } }
+
+    [SerializeField] private GameObject m_ProjectilePrefab;
+    public GameObject projectilePrefab { get { return m_ProjectilePrefab; } set { m_ProjectilePrefab = value; } }
+
+    [SerializeField] private bool m_playerInRange;
+    public bool playerInRange { get { return m_playerInRange; } set { m_playerInRange = value; } }
+
+    private float m_LastAttackTime = 0f;
+    public float lastAttackTime { get { return m_LastAttackTime; } set { m_LastAttackTime = value; } }
+
+    [Tooltip("How many projectiles are fire/second")][SerializeField] private float m_FireRate;
+    public float fireRate { get { return m_FireRate; } set { m_FireRate = value; } }
+
+    [SerializeField] private float m_ShootSpeed;
+    public float shootSpeed { get { return m_ShootSpeed; } set { m_ShootSpeed = value; } }
+
+    private GameObject playerRef;
+
+    private void Awake()
     {
-        if (GetDistanceToPlayer() > 150f && !GameManager.Instance.isEnemyClose)
+        playerRef = GameObject.Find("Player");
+    }
+
+    public virtual void GoTo(Vector3 direction, float speed)
+    {
+        if (GetDistanceToPlayer() > appearDistance && !GameManager.Instance.isEnemyClose)
         {
-            transform.Translate(-Vector3.forward * .5f);
+            transform.Translate(direction * speed);
         }
         else
         {
+            playerInRange = true;
             GameManager.Instance.isEnemyClose = true;
+
+            foreach (Transform point in firePoints)
+            {
+                point.LookAt(playerRef.transform);
+            }
+
+            transform.LookAt(playerRef.transform);
+
+            if (Time.time - lastAttackTime >= 1f / fireRate)
+            {
+                Fire();
+                lastAttackTime = Time.time;
+            }
         }
     }
 
@@ -37,10 +83,29 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
 
     public float GetDistanceToPlayer()
     {
-        float distance = Mathf.Abs(GameObject.Find("Player").transform.position.z - this.transform.position.z);
+        float distance = Mathf.Abs(playerRef.transform.position.z - this.transform.position.z);
         return distance;
     }
 
+    public virtual Quaternion RotateTowards(Transform _transform)
+    {
+        return Quaternion.LookRotation(_transform.position - transform.position, transform.up);
+    }
+
+    public virtual Transform ShootFromPositions(List<Transform> fromList)
+    {
+        return fromList[Random.Range(0, fromList.Count)];
+    }
+
+    public virtual void Fire()
+    {
+        GameObject projectile = Instantiate(projectilePrefab, ShootFromPositions(firePoints).position, RotateTowards(playerRef.transform));
+        //Get the Rigidbody of the projectile Prefab
+        Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
+
+        //Shoot the Bullet in the forward direction of the player
+        projectileRb.velocity = transform.forward * shootSpeed;
+    }
 
     public virtual string GetName()
     {
