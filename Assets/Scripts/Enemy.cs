@@ -104,7 +104,7 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
         Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
 
         //Shoot the Bullet in the forward direction of the player
-        projectileRb.velocity = transform.forward * shootSpeed;
+        projectileRb.AddRelativeForce(transform.forward * shootSpeed);
     }
 
     public virtual string GetName()

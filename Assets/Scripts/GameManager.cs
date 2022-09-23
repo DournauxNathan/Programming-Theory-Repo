@@ -8,7 +8,9 @@ public class GameManager : MonoBehaviour
 
     public int bestDistanceTraveled;
 
-    public bool isGameOver = false;
+    private bool m_isGameOver = false;
+    public bool isGameOver { get {return m_isGameOver; } private set { m_isGameOver = value;  } }
+    
     public bool isEnemyClose;
 
     private void Awake()
@@ -19,7 +21,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isGameOver && !isEnemyClose)
+        if (!GetGameOver())
         {
             UIMainScene.Instance.DisplayMetersTravel(DistanceTraveled());
         }
@@ -31,4 +33,20 @@ public class GameManager : MonoBehaviour
 
         return distance;
     }
+
+    public void SetGameOver(bool value)
+    {
+        m_isGameOver = value;
+
+        if (m_isGameOver)
+        {
+            SpawnManager.Instance.CancelInvoke();
+        }
+    }
+
+    public bool GetGameOver()
+    {
+        return isGameOver;
+    }
+
 }

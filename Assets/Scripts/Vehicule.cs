@@ -10,6 +10,7 @@ public class Boundary
 
 //INHERITANCE - Parent class
 //Base class for all vehicule. It will handle movement and physics of vehicule
+[RequireComponent(typeof(Rigidbody))]
 public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 {
     // ENCAPSULATION
@@ -90,18 +91,21 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
     // ABSTRACTION
     public virtual void Move()
     {
-        //Get Input from player
-        horizontalInput = Input.GetAxis("Horizontal");
-
-        for (int i = 0; i < anchors.Count; i++)
+        if (!GameManager.Instance.GetGameOver())
         {
-            ApplyForce(anchors[i], groundAnchors[i], hits[i]);
+            //Get Input from player
+            horizontalInput = Input.GetAxis("Horizontal");
+
+            for (int i = 0; i < anchors.Count; i++)
+            {
+                ApplyForce(anchors[i], groundAnchors[i], hits[i]);
+            }
+
+            Vector3 direction = new Vector3(horizontalInput * speed, 0f, 0f);
+            m_Rigidbody.AddForce(direction, ForceMode.Acceleration);
+
+            KeepVehiculeInBound(xRange);
         }
-
-        Vector3 direction = new Vector3(horizontalInput * speed, 0f, 0f);
-        m_Rigidbody.AddForce(direction, ForceMode.Acceleration);
-
-        KeepVehiculeInBound(xRange);
     }
 
     private void ApplyForce(Transform anchor, Transform groundedAnchor, RaycastHit hit)
@@ -121,23 +125,6 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 
     public virtual void Dodge()
     {
-        if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0)
-        {
-            //Set a rate at which we should turn
-            float turnSpeed = dodgeSpeed * Time.deltaTime;
-            //Connect turning rate to horizonal motion for smooth transition
-            float rotate = Input.GetAxis("Horizontal") * turnSpeed;
-            //            //Get current rotation
-            //            float currentRotation = gameObject.transform.rotation.z;
-            //            //Add current rotation to rotation rate to get new rotation
-            //            Quaternion rotation = Quaternion.Euler (0, 0, currentRotation + rotate);
-            //            //Move object to new rotation
-            //            gameObject.transform.rotation = rotation;
-            //gameObject.transform.Rotate();
-
-            m_Rigidbody.MoveRotation(Quaternion.Euler(Vector3.forward * rotate));
-            m_Rigidbody.MoveRotation(Quaternion.Euler(Vector3.zero));
-        }
         //Force in the direction of the horizontal input
         Vector3 forceToadd = Vector3.right * dodgeForce * dodgeMultiplier * horizontalInput;
 
@@ -166,8 +153,7 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
     }
 
     private void ResetDodgeCoolDown()
-    {
-        
+    {        
         StopCoroutine(nameof(IncreaseDodgeCharge));
         m_ReadyToDodge = true;
         dodgeCharge = 1;
@@ -189,6 +175,11 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
     public virtual void SubscribeDamage(float damage)
     {
         UIMainScene.Instance.UpdateSlider(UIMainScene.Instance.playerHealthBar, damage);
+
+        if (health <= 0)
+        {
+            GameManager.Instance.SetGameOver(true);
+        }
     }
 
     public virtual void CalculSpeed()

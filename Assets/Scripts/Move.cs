@@ -9,6 +9,9 @@ public class Move : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(-Vector3.forward * speed * Time.deltaTime);
+        if (!GameManager.Instance.GetGameOver())
+        {
+            transform.Translate(-Vector3.forward * speed * Time.deltaTime);
+        }
     }
 }

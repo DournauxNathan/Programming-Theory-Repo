@@ -25,8 +25,7 @@ public class SpawnManager : MonoBehaviour
 
     private void Update()
     {
-
-        if (GameManager.Instance.DistanceTraveled() >= 150 && spawnEnemy)
+        if (GameManager.Instance.DistanceTraveled() >= 150 && spawnEnemy && !GameManager.Instance.GetGameOver())
         {
             spawnEnemy = true;
             CancelInvoke();
@@ -64,9 +63,3 @@ public class SpawnManager : MonoBehaviour
 
 }
 
-public static class MonoExtension
-{    public static void Invoke(this MonoBehaviour mono, string method, float delay, float repeatRate)
-    {
-        mono.InvokeRepeating(nameof(method), delay, repeatRate);
-    }
-}
