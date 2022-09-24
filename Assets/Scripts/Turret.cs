@@ -61,8 +61,11 @@ public abstract class Turret : MonoBehaviour, UIMainScene.IUIInfoContent
             Vector3 difference = (hit.transform.position - turret.position).normalized;
             float distance = difference.magnitude;
             Vector3 direction = (difference / distance).normalized;
-
-            FireBullet(direction, force * multiplier);
+            
+            if (!hit.collider.CompareTag("Player"))
+            {
+                FireBullet(direction, force * multiplier);
+            }
         }
 
         Invoke(nameof(ResetShoot), fireRate);

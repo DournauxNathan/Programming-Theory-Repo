@@ -15,31 +15,22 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;    
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (!GetGameOver())
+        if (GameManager.Instance != null)
         {
-            UIMainScene.Instance.DisplayMetersTravel(DistanceTraveled());
+            Destroy(this.gameObject);
         }
-    }
 
-    public int DistanceTraveled()
-    {
-        int distance = Mathf.RoundToInt(Time.time * 10f);
-
-        return distance;
+        Instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     public void SetGameOver(bool value)
     {
         m_isGameOver = value;
 
-        if (m_isGameOver)
+        if (m_isGameOver && UIMainScene.Instance != null)
         {
+            UIMainScene.Instance.gameOverScreen.SetActive(isGameOver);
             SpawnManager.Instance.CancelInvoke();
         }
     }

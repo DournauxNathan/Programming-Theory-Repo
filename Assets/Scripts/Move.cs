@@ -4,14 +4,17 @@ using UnityEngine;
 
 public class Move : MonoBehaviour
 {
-    public float speed = 50f;
-
     // Update is called once per frame
     void Update()
     {
-        if (!GameManager.Instance.GetGameOver())
+        if (this.CompareTag("Health") && !GameManager.Instance.GetGameOver())
         {
-            transform.Translate(-Vector3.forward * speed * Time.deltaTime);
+            transform.Translate(-Vector3.forward * 50f * Time.deltaTime);
+
+        }
+        else if (!GameManager.Instance.GetGameOver())
+        {
+            transform.Translate(-Vector3.forward * SpawnManager.Instance.obstacleSpeed * 10f * Time.deltaTime);
         }
     }
 }

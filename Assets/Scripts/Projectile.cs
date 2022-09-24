@@ -8,15 +8,14 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log(other.tag);
-        if (other.CompareTag("Enemy") /*&& this.gameObject.CompareTag("Player")*/)
+        if (other.CompareTag("Enemy") && !other.CompareTag("Player"))
         {
             Debug.Log("Enemy touched");
             other.GetComponent<Enemy>().SubscribeDamage(damage);
             Destroy(this.gameObject);
         }
 
-        if (other.CompareTag("Player") /*&& this.gameObject.CompareTag("Enemy")*/)
+        if (other.CompareTag("Player") && !other.CompareTag("Enemy"))
         {
             Debug.Log("Player touched");
             other.GetComponentInParent<Vehicule>().SubscribeDamage(damage);

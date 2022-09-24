@@ -47,9 +47,15 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
     [Header("Animation Parameters")]
     protected string dodgeLAnimParameter = "Dodge_L";
     protected string dodgeRAnimParameter = "Dodge_R";
+    
+    [Header("VFX")]
+    [SerializeField] private ParticleSystem m_ExplosionEffect;
+    public ParticleSystem explosionEffect { get { return m_ExplosionEffect; } set { m_ExplosionEffect = value; } }
 
     [Header("SFX")]
     [SerializeField] private AudioClip dodgeEffect;
+    [SerializeField] private AudioClip m_CrashEffect;
+    public AudioClip crashEffect { get { return m_CrashEffect; } set { m_CrashEffect = value; } }
     private AudioSource m_Audiosource;
     public AudioSource audioSource { get { return m_Audiosource; } set { m_Audiosource = value; } }
 
@@ -71,6 +77,7 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
 
     private void Start()
     {
+        m_Health = maxHealth;
         UIMainScene.Instance.SetSliderTo(UIMainScene.Instance.playerHealthBar, maxHealth);
     }
 
@@ -171,14 +178,25 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
             transform.position = new Vector3(xRange, transform.position.y, transform.position.z);
         }
     }
+    public virtual void Heal(int healthToAdd)
+    {
+        health += healthToAdd;
+
+        if (health >= maxHealth)
+        {
+            health = maxHealth;
+        }
+    }
 
     public virtual void SubscribeDamage(float damage)
     {
         UIMainScene.Instance.UpdateSlider(UIMainScene.Instance.playerHealthBar, damage);
+        health -= damage;
 
         if (health <= 0)
         {
             GameManager.Instance.SetGameOver(true);
+            //audioSource.Stop();
         }
     }
 

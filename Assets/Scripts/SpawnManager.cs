@@ -6,26 +6,28 @@ using UnityEngine.Events;
 public class SpawnManager : MonoBehaviour
 {
     public static SpawnManager Instance { get; private set; }
-
+    public List<Transform> slots;
+    [Header("Obstacles Settings")]
+    public List<GameObject> obstaclePrefabs;
+    public float obstacleSpeed;
     public float startDelay;
     public float repeatRate;
-    
-    public List<GameObject> obstaclePrefabs;
+    [Header("Enemies Settings")]
     public List<GameObject> enemyPrefabs;
-
-    public List<Transform> slots;
+    public float lastSpawnTime;
+    public float spawnRate;
 
     public bool spawnEnemy;
+
     private void Awake()
     {
         Instance = this;
         InvokeRepeating(nameof(SpawnObstacle), startDelay, repeatRate);
-
     }
 
     private void Update()
     {
-        if (GameManager.Instance.DistanceTraveled() >= 150 && spawnEnemy && !GameManager.Instance.GetGameOver())
+        if (UIMainScene.Instance.DistanceTraveled() >= lastSpawnTime && spawnEnemy && !GameManager.Instance.GetGameOver())
         {
             spawnEnemy = true;
             CancelInvoke();

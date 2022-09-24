@@ -36,11 +36,21 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
     [SerializeField] private float m_ShootSpeed;
     public float shootSpeed { get { return m_ShootSpeed; } set { m_ShootSpeed = value; } }
 
+    [Header("SFX Parameters")]
     private GameObject playerRef;
+    private AudioSource m_AudioSource;
+    [SerializeField] private AudioClip shootSFX;
+
+    [Header("VFX")]
+    [SerializeField] private ParticleSystem m_alertEffect;
+    public ParticleSystem alertEffect { get { return m_ExplosionEffect; } set { m_ExplosionEffect = value; } }
+    [SerializeField] private ParticleSystem m_ExplosionEffect;
+    public ParticleSystem explosionEffect { get { return m_ExplosionEffect; } set { m_ExplosionEffect = value; } }
 
     private void Awake()
     {
         playerRef = GameObject.Find("Player");
+        m_AudioSource = GetComponent<AudioSource>();
     }
 
     public virtual void GoTo(Vector3 direction, float speed)
@@ -51,6 +61,8 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
         }
         else
         {
+            StartCoroutine(nameof(IsAlert));
+
             playerInRange = true;
             GameManager.Instance.isEnemyClose = true;
 
@@ -79,6 +91,12 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
     {
         UIMainScene.Instance.currentEnemy = this.gameObject;
         UIMainScene.Instance.UpdateEnemyHealth(damage);
+        health -= damage;
+
+        if (health <= (maxHealth / 2))
+        {
+            explosionEffect.Play();
+        }
     }
 
     public float GetDistanceToPlayer()
@@ -104,7 +122,15 @@ public class Enemy : MonoBehaviour, UIMainScene.IUIInfoContent
         Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
 
         //Shoot the Bullet in the forward direction of the player
-        projectileRb.AddRelativeForce(transform.forward * shootSpeed);
+        projectileRb.velocity = transform.forward * shootSpeed;
+
+        m_AudioSource.PlayOneShot(shootSFX, 1.0f);
+    }
+
+    IEnumerator IsAlert()
+    {
+        alertEffect.Play();
+        yield return new WaitForSeconds(0f);
     }
 
     public virtual string GetName()

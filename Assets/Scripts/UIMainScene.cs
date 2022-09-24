@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
@@ -17,11 +18,14 @@ public class UIMainScene : MonoBehaviour
 
     [Header("")]
     public GameObject upperCenter;
-    
+    public GameObject gameOverScreen;
+    public GameObject player;
+
     [Header("Player HUD Informations")]
     public GameObject crossHair;
     public Image dodgeCharge;
     public Slider playerHealthBar;
+    private int distanceTraveled;
     public TextMeshProUGUI distanceTravel;
 
     [Header("Enemy Informations")]
@@ -34,16 +38,20 @@ public class UIMainScene : MonoBehaviour
         Instance = this;
     }
 
-    private void OnDestroy()
-    {
-        Instance = null;
-    }
-
-    // Update is called once per frame
     void Update()
     {
         GetMousePosition();
         crossHair.transform.position = GetMousePosition();
+
+        if (!GameManager.Instance.GetGameOver())
+        {
+            DisplayMetersTravel(DistanceTraveled());
+        }
+
+        if (GameManager.Instance.GetGameOver() && Input.GetKeyDown(KeyCode.Space))
+        {
+            SceneManager.LoadScene(1);
+        }
     }
 
     public void SetActiveUIContent(GameObject uiContent, bool state)
@@ -73,7 +81,11 @@ public class UIMainScene : MonoBehaviour
             Destroy(currentEnemy);
             currentEnemy = null;
 
-            SpawnManager.Instance.InvokeRepeating("SpawnObstacle", SpawnManager.Instance.startDelay, SpawnManager.Instance.repeatRate);
+            player.GetComponent<Vehicule>().Heal(Mathf.RoundToInt(playerHealthBar.maxValue));
+
+            SpawnManager.Instance.spawnEnemy = true;
+            SpawnManager.Instance.lastSpawnTime += distanceTraveled + 300;
+            SpawnManager.Instance.InvokeRepeating("SpawnObstacle", SpawnManager.Instance.startDelay*1.2f, SpawnManager.Instance.repeatRate *1.2f);
         }
     }
 
@@ -91,7 +103,14 @@ public class UIMainScene : MonoBehaviour
 
     public void DisplayMetersTravel(int distance)
     {
-        distanceTravel.SetText(string.Format("{0} {1}", "Distance: ", distance));
+        distanceTravel.SetText(string.Format("{0}", distance));
+    }
+
+    public int DistanceTraveled()
+    {
+        int distance = Mathf.RoundToInt(Time.time * 10f);
+
+        return distance;
     }
 
     public static Vector3 GetMousePosition()
@@ -99,5 +118,10 @@ public class UIMainScene : MonoBehaviour
         Vector3 mousePos = Input.mousePosition;
         mousePos -= Camera.main.transform.forward * 10f; // Make sure to add some "depth" to the screen point
         return mousePos;
+    }
+
+    public void LoadScene(int index)
+    {
+        SceneManager.LoadScene(index);
     }
 }

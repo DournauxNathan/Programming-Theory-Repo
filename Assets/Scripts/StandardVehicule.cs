@@ -9,9 +9,10 @@ public class StandardVehicule : Vehicule
     {
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            Debug.Log("");
-            
+            audioSource.PlayOneShot(crashEffect, 1.0f);
+            explosionEffect.Play();
             SubscribeDamage(maxHealth);
         }
     }
+
 }
