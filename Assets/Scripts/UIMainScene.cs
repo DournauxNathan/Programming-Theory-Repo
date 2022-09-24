@@ -35,6 +35,9 @@ public class UIMainScene : MonoBehaviour
 
     private void Awake()
     {
+        GameManager.Instance.SetGameOver(false);
+        distanceTraveled = 0;
+        distanceTravel.SetText(distanceTraveled.ToString());
         Instance = this;
     }
 
@@ -45,12 +48,14 @@ public class UIMainScene : MonoBehaviour
 
         if (!GameManager.Instance.GetGameOver())
         {
-            DisplayMetersTravel(DistanceTraveled());
+            DisplayMetersTravel();
         }
 
         if (GameManager.Instance.GetGameOver() && Input.GetKeyDown(KeyCode.Space))
         {
             SceneManager.LoadScene(1);
+            distanceTravel.SetText(distanceTraveled.ToString());
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 
@@ -101,16 +106,18 @@ public class UIMainScene : MonoBehaviour
         slider.value -= value;
     }
 
-    public void DisplayMetersTravel(int distance)
+    public void DisplayMetersTravel()
     {
-        distanceTravel.SetText(string.Format("{0}", distance));
+        distanceTravel.SetText(string.Format("{0}", distanceTraveled));
     }
 
     public int DistanceTraveled()
-    {
-        int distance = Mathf.RoundToInt(Time.time * 10f);
-
-        return distance;
+    {        
+        if (!GameManager.Instance.GetGameOver())
+        {
+           return distanceTraveled = Mathf.RoundToInt(Time.timeSinceLevelLoad * 10f);
+        }
+        return distanceTraveled = 0;
     }
 
     public static Vector3 GetMousePosition()
