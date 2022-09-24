@@ -27,12 +27,6 @@ public class GameManager : MonoBehaviour
     public void SetGameOver(bool value)
     {
         m_isGameOver = value;
-
-        if (m_isGameOver && UIMainScene.Instance != null)
-        {
-            UIMainScene.Instance.gameOverScreen.SetActive(isGameOver);
-            SpawnManager.Instance.CancelInvoke();
-        }
     }
 
     public bool GetGameOver()

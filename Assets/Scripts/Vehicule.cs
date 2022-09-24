@@ -196,7 +196,9 @@ public abstract class Vehicule : MonoBehaviour, UIMainScene.IUIInfoContent
         if (health <= 0)
         {
             GameManager.Instance.SetGameOver(true);
-            //audioSource.Stop();
+
+            UIMainScene.Instance.gameOverScreen.SetActive(true);
+            SpawnManager.Instance.CancelInvoke();
         }
     }
 
